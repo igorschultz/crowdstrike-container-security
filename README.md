@@ -2,7 +2,7 @@
 
 In the container modules deployment folder you can check for different deployment options that better suits your needs. Here we provide deployment scripts for Node Sensor (as Daemonset), Admission Controller (KAC) and Image Assessment at Runtime (IAR).
 
-You can choose to deploy each module independently or the [all-in-one script] (https://github.com/pbaumbach2/falcon-k8s-cluster-deploy/blob/main/README.md) that will install all modules at once.
+You can choose to deploy each module independently or the [all-in-one script](https://github.com/pbaumbach2/falcon-k8s-cluster-deploy/blob/main/README.md) that will install all modules at once.
 
 # All-in-one Module
 
