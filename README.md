@@ -76,28 +76,9 @@ export FALCON_CLOUD=
 --cluster <myclustername> \
 --region "us-2" \
 --tags "pov-demo-container" \
---ebpf "true" \
---skip-kpa
+--ebpf "true"
 
-```
-
-  
-
-#### Example to deploy sidecar sensor. KPA, KAC, and IAR:
-
-  
-
-```
-
-./falcon-k8s-cluster-deploy.sh \
---client-id <ABCDEFG123456> \
---client-secret <ABCDEFG123456> \
---cluster <myclustername> \
---sidecar
-
-```
-
-  
+```  
 
 ### Full list of variables available
 

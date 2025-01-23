@@ -16,5 +16,4 @@ EOF
 --cluster "$CLUSTER_NAME" \
 --region "us-2" \
 --tags "pov-demo-container" \
---ebpf "true" \
---skip-kpa
+--ebpf "true"
