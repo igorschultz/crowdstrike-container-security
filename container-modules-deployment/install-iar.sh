@@ -1,8 +1,6 @@
 curl -sSL -o falcon-container-sensor-pull.sh "https://raw.githubusercontent.com/CrowdStrike/falcon-scripts/main/bash/containers/falcon-container-sensor-pull/falcon-container-sensor-pull.sh"
 chmod +x falcon-container-sensor-pull.sh
 
-FALCON_CLOUD=us-1
-AZURE=false
 K8S_CLUSTER_NAME="$(kubectl config view --minify -o jsonpath='{.contexts[].context.cluster}')"
 
 export FALCON_CLIENT_ID=xxxxxxxx

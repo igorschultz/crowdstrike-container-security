@@ -2,10 +2,9 @@ curl -sSL -o falcon-container-sensor-pull.sh "https://raw.githubusercontent.com/
 chmod +x falcon-container-sensor-pull.sh
 
 BACKEND=bpf
-AUTOPILOT=false
 
 export FALCON_CLIENT_ID=xxxxxxxx
-export FALCON_CLIENT_SECRET=xxxxxxxxs
+export FALCON_CLIENT_SECRET=xxxxxxxx
 
 echo Deploying Falcon Sensor as Daemonset
 export FALCON_CID=$( ./falcon-container-sensor-pull.sh  -t falcon-sensor --get-cid )
@@ -21,5 +20,4 @@ helm upgrade --install falcon-sensor crowdstrike/falcon-sensor -n falcon-system 
   --set node.image.repository="$FALCON_IMAGE_REPO" \
   --set node.image.tag="$FALCON_IMAGE_TAG" \
   --set node.image.registryConfigJSON="$FALCON_IMAGE_PULL_TOKEN" \
-  --set node.backend="$BACKEND" \
-  --set node.gke.autopilot="$AUTOPILOT"
+  --set node.backend="$BACKEND"

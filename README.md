@@ -1,110 +1,119 @@
-# Understanding the deployment methods for CrowdStrike Container Security
+# CrowdStrike Falcon Platform Helm Chart
 
-In the container modules deployment folder you can check for different deployment options that better suits your needs. Here we provide deployment scripts for Node Sensor (as Daemonset), Admission Controller (KAC) and Image Assessment at Runtime (IAR).
+The Falcon Platform Helm Chart deploys the complete CrowdStrike Falcon Kubernetes runtime security
+platform. This umbrella chart manages all individual Falcon components as dependencies, providing
+unified deployment and configuration.
 
-You can choose to deploy each module independently or the [all-in-one script](https://github.com/pbaumbach2/falcon-k8s-cluster-deploy/blob/main/README.md) that will install all modules at once.
+## Falcon-Platform Overview
 
-# All-in-one Module
+The Falcon Platform Helm chart allows you to deploy and manage the entire CrowdStrike Falcon Kubernetes runtime security stack with a single Helm installation. It coordinates the deployment of multiple security components while providing centralized configuration management and deployment orchestration.
 
-Bash script to deploy latest versions of Node Sensor daemonset or Container Sensor Injector, Kubernetes Admission Controller(KAC), and Image at Runtime Scanner (IAR) pulling all images from the CrowdStrike Registry.
+### Components
 
-## Purpose:
+The platform manages three core security components as dependencies, with the Falcon Sensor
+supporting one of two deployment modes.
+
+| Component                                                                 | Purpose                                                 | Default Status |
+|---------------------------------------------------------------------------|---------------------------------------------------------|----------------|
+| [**Falcon Node Sensor**](/helm-charts/falcon-sensor/README.md)            | Daemonset for runtime node protection and monitoring    | Enabled        |
+| [**Falcon Container Sensor**](/helm-charts/falcon-sensor/README.md)       | Sidecar for runtime container protection and monitoring | Disabled       |
+| [**Falcon KAC**](/helm-charts/falcon-kac/README.md)                       | Kubernetes admission controller for policy enforcement  | Enabled        |
+| [**Falcon Image Analyzer**](/helm-charts/falcon-image-analyzer/README.md) | Container image vulnerability scanning and assessment   | Enabled        |
+
+### Purpose
 
 To facilitate quick deployment of recommended CWP resources for testing.
 
 For other deployment methods including hosting sensor in private registry, Terraform, etc., see CrowdStrike documentation and CrowdStrike GitHub.
 
-## Prerequisite:
+## Prerequisites
 
-- Script requires the following commands to be installed:
--  `curl`
--  `helm`
-- CrowdStrike API Client created with `Falcon Images Download (read)`, `Sensor Download (read)`, `Falcon Container CLI (write) `, and `Falcon Container Image (read/write)` scopes assigned.
-- Cluster name
+### Minimum Requirements
 
-## Usage:
+- Helm 3.x
+- Falcon Customer ID (CID)
+- Appropriate cluster permissions (cluster-admin) for installation
+- Falcon registry access to pull Falcon component container images
+- Falcon OAuth client credentials
+  - Required Permissions:
+    - Falcon Container CLI: Write
+    - Falcon Container Image: Read/Write
+    - Falcon Images Download: Read
 
+### 1. Set your environment variables:
+
+```bash
+export FALCON_CID=<your-falcon-cid>
+export ENCODED_DOCKER_CONFIG=<your-base64-encoded-docker-config>
+export SENSOR_REGISTRY=<your-sensor-registry>
+export SENSOR_IMAGE_TAG=<your-falcon-sensor-image-tag>
+export KAC_REGISTRY=<your-kac-registry>
+export KAC_IMAGE_TAG=<your-falcon-kac-image-tag>
+export IAR_REGISTRY=<your-iar-registry>
+export IAR_IMAGE_TAG=<your-falcon-iar-image-tag>
+export CLUSTER_NAME=<your-cluster-name>
+export FALCON_CLIENT_ID=<your-falcon-client-id>
+export FALCON_CLIENT_SECRET=<your-falcon-client-secret>
 ```
 
-usage: ./falcon-k8s-cluster-deploy.sh
+### 2. Add the Helm Repository
 
-Required Flags:
-    -u, --client-id <FALCON_CLIENT_ID>             Falcon API OAUTH Client ID
-    -s, --client-secret <FALCON_CLIENT_SECRET>     Falcon API OAUTH Client Secret
-    -r, --region <FALCON_REGION>                   Falcon Cloud Region [us-1, us-2, eu-1, gov-1, or gov-2]
-    -c, --cluster <K8S_CLUSTER_NAME>               Cluster name
-Optional Flags:
-    --sidecar                        Deploy container sensor as sidecar. Existing pods must be restarted to install sidecar sensors.
-    --azure                          Enables IAR scanning for ACR sourced images on Azure using default Azure config JSON file path   
-    --skip-sensor                    Skip deployment of Falcon sensor
-    --skip-kac                       Skip deployment of KAC (Kubernetes Admission Control)
-    --skip-iar                       Skip deployment of IAR (Image at Runtime Scanning)
-    --tags <TAG1,TAG2>               Tag the Falcon sensor. Multiple tags must formatted with \, separators. e.g. --tags "exampletag1\,exampletag2"
-    --uninstall                      Uninstalls all components
-
-Help Options:
-    -h, --help display this help message"
-
+```bash
+helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm
+helm repo update
 ```
 
+### 3. Deploy the Helm Chart
 
+Deploy all 3 components using `--set` arguments to pass configuration values directly. The
+`createComponentNamespaces=true` setting automatically creates the required namespaces for each
+component.
 
-Execute the script with the required and relevant input arguments. 
-Script references falcon-container-sensor-pull.sh from https://github.com/CrowdStrike/falcon-scripts/tree/main/bash/containers/falcon-container-sensor-pull 
-
-  The node sensor will deploy as a daemonset and automatically protect the host and all containers on the host.
-
-  The sidecar sensor will deploy sensor injector pods. The injector will deploy the sidecar sensor into all newly started pods. Pre-existing workloads must be redeployed to be protected. The pull secret will be deployed into all namespaces at the time of helm chart deployment.
-
-  #### Example to set environment variables to skip switches in subsequent examples
+```bash
+helm install falcon-platform crowdstrike/falcon-platform --version 1.0.0 \
+  --namespace falcon-platform \
+  --create-namespace \
+  --set createComponentNamespaces=true \
+  --set global.falcon.cid=$FALCON_CID \
+  --set global.containerRegistry.configJSON=$ENCODED_DOCKER_CONFIG \
+  --set falcon-sensor.node.image.repository=$SENSOR_REGISTRY \
+  --set falcon-sensor.node.image.tag=$SENSOR_IMAGE_TAG \
+  --set falcon-kac.image.repository=$KAC_REGISTRY \
+  --set falcon-kac.image.tag=$KAC_IMAGE_TAG \
+  --set falcon-image-analyzer.deployment.enabled=true \
+  --set falcon-image-analyzer.image.repository=$IAR_REGISTRY \
+  --set falcon-image-analyzer.image.tag=$IAR_IMAGE_TAG \
+  --set falcon-image-analyzer.crowdstrikeConfig.clusterName=$CLUSTER_NAME \
+  --set falcon-image-analyzer.crowdstrikeConfig.clientID=$FALCON_CLIENT_ID \
+  --set falcon-image-analyzer.crowdstrikeConfig.clientSecret=$FALCON_CLIENT_SECRET
 ```
-export FALCON_CLIENT_ID=<your client id>
-export FALCON_CLIENT_SECRET=<your client secret>
-export K8S_CLUSTER_NAME=<name of kubernetes cluster>
-export FALCON_CLOUD=
 
+## Verify Falcon Platform Deployment
+
+### Check Installation Status
+
+```bash
+# Check overall falcon-platform release status
+helm list -n falcon-platform
+
+# Expected Output:
+NAME           	NAMESPACE      	REVISION	UPDATED                             	STATUS  	CHART                	APP VERSION
+falcon-platform	falcon-platform	1       	2025-10-06 16:54:28.315583 -0400 EDT	deployed	falcon-platform-1.0.0
+
+# Check all pods with the falcon-platform label
+kubectl get pods -l app.kubernetes.io/instance=falcon-platform -A
+
+# Expected Output:
+NAMESPACE               NAME                                          READY   STATUS    RESTARTS   AGE
+falcon-image-analyzer   falcon-platform-falcon-image-analyzer-xxxxx   1/1     Running   0          2m
+falcon-kac              falcon-kac-xxxxxxxxx-xxxxx                    3/3     Running   0          2m
+falcon-system           falcon-platform-falcon-sensor-xxxxx           1/1     Running   0          2m
 ```
-  
-#### Example to deploy node sensor as daemonset, KAC, and IAR on Falcon region "US-2":
-
-```
-
-./falcon-k8s-cluster-deploy.sh \
---client-id <ABCDEFG123456> \
---client-secret <ABCDEFG123456> \
---cluster <myclustername> \
---region "us-2" \
---tags "pov-demo-container" \
---ebpf "true"
-
-```  
-
-### Full list of variables available
-
-> **Note**: **Settings can be passed to the script via CLI flags or environment variables:**
-
-| Flags                                          | Environment Variables   | Default                    | Description                                                                              |
-|:-----------------------------------------------|-------------------------|----------------------------|------------------------------------------------------------------------------------------|
-| `-u`, `--client-id <FALCON_CLIENT_ID>` | `$FALCON_CLIENT_ID` | `None` (Required) | CrowdStrike API Client ID 
-| `-s`, `--client-secret <FALCON_CLIENT_SECRET>` | `$FALCON_CLIENT_SECRET` | `None` (Required) | CrowdStrike API Client Secret |
-| `-r`, `--region <FALCON_CLOUD>` | `$FALCON_CLOUD` | `None` (Required) | CrowdStrike Region | |
-| `-c` | `K8S_CLUSTER_NAME` | `None` (Required) | Name of Kubernetes Cluster
-| `--sidecar` | N/A | `false` | Deploys sidecar sensor injector as daemonset
-| `--ebpf` | N/A | `false` | Deploys node sensor in user / eBPF mode instead of kernel mode. Not compatible with sidecar sensor.
-| `--azure` | N/A | `false` | Enables IAR scanning for ACR sourced images on Azure using default Azure config JSON file path  . 
-| `--autopilot` | N/A | `false` | For deployments onto GKE autopilot. Defaults to eBPF / User mode.
-| `--skip-sensor` | N/A | `false` | Skips deployment of Falcon Sensor
-| `--skip-kac` | N/A | `false` | Skips deployment of Kubernetes Admission Controller (KAC)
-| `--skip-iar` | N/A | `false` | Skips deployment of Image at Runtime Scanner (IAR)
-| `--uninstall` | N/A | `false` | Uninstalls all components
-| `-h`, `--help` | N/A | `None` | Display help message
-
-  
 
 ### Uninstall Helm Chart
 
 To uninstall, run the following command:
 
+```bash
+helm uninstall falcon-platform -n falcon-platform
 ```
-./falcon-k8s-cluster-deploy.sh --uninstall
-``` 
