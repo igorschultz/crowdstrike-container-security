@@ -39,6 +39,7 @@ For other deployment methods including hosting sensor in private registry, Terra
     - Falcon Container CLI: Write
     - Falcon Container Image: Read/Write
     - Falcon Images Download: Read
+    - Sensor Download: Read
 
 ### 1. Set your environment variables:
 
