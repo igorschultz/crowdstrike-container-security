@@ -8,20 +8,19 @@ export FALCON_CID=$( ./falcon-container-sensor-pull.sh -t falcon-sensor --get-ci
 export FALCON_IMAGE_PULL_TOKEN=$( ./falcon-container-sensor-pull.sh -t falcon-sensor --get-pull-token )
 
 # Falcon Sensor Variables
+echo Collecting Falcon Sensor image details..
 export FALCON_IMAGE_FULL_PATH=$( ./falcon-container-sensor-pull.sh -t falcon-sensor --get-image-path )
 export FALCON_IMAGE_REPO=$( echo $FALCON_IMAGE_FULL_PATH | cut -d':' -f 1 )
 export FALCON_IMAGE_TAG=$( echo $FALCON_IMAGE_FULL_PATH | cut -d':' -f 2 )
+echo Done.
 
 # Falcon IAR Variables
+echo Collecting IAR image details..
 export IAR_IMAGE_FULL_PATH=$( ./falcon-container-sensor-pull.sh -t falcon-imageanalyzer --get-image-path ) 
 export IAR_IMAGE_REPO=$( echo $IAR_IMAGE_FULL_PATH | cut -d':' -f 1 )
 export IAR_IMAGE_TAG=$( echo $IAR_IMAGE_FULL_PATH | cut -d':' -f 2 )
 export CLUSTER_NAME="$(kubectl config view --minify -o jsonpath='{.contexts[].context.cluster}' | cut -d'.' -f 1)"
-
-# Falcon KAC Variables
-export KAC_IMAGE_FULL_PATH=$( ./falcon-container-sensor-pull.sh -t falcon-kac --get-image-path )
-export KAC_IMAGE_REPO=$( echo $KAC_IMAGE_FULL_PATH | cut -d':' -f 1 )
-export KAC_IMAGE_TAG=$( echo $KAC_IMAGE_FULL_PATH | cut -d':' -f 2 )
+echo Done.
 
 
 helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm --force-update
