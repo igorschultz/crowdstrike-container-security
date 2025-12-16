@@ -22,6 +22,12 @@ export IAR_IMAGE_TAG=$( echo $IAR_IMAGE_FULL_PATH | cut -d':' -f 2 )
 export CLUSTER_NAME="$(kubectl config view --minify -o jsonpath='{.contexts[].context.cluster}' | cut -d'.' -f 1)"
 echo Done.
 
+# Falcon KAC Variables
+echo Collecting KAC image details..
+export KAC_IMAGE_FULL_PATH=$( ./falcon-container-sensor-pull.sh -t falcon-kac --get-image-path )
+export KAC_IMAGE_REPO=$( echo $KAC_IMAGE_FULL_PATH | cut -d':' -f 1 )
+export KAC_IMAGE_TAG=$( echo $KAC_IMAGE_FULL_PATH | cut -d':' -f 2 )
+echo Done.
 
 helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm --force-update
 helm install falcon-platform crowdstrike/falcon-platform --version 1.0.0\
