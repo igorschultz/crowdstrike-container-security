@@ -71,7 +71,7 @@ Deploy all 3 components using `--set` arguments to pass configuration values dir
 component.
 
 ```bash
-helm install falcon-platform crowdstrike/falcon-platform --version 1.0.0 \
+helm install falcon-platform crowdstrike/falcon-platform --version 1.4.0 \
   --namespace falcon-platform \
   --create-namespace \
   --set createComponentNamespaces=true \

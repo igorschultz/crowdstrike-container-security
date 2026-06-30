@@ -1,4 +1,4 @@
-curl -sSL -o falcon-container-sensor-pull.sh "https://raw.githubusercontent.com/CrowdStrike/falcon-scripts/main/bash/containers/falcon-container-sensor-pull/falcon-container-sensor-pull.sh"
+curl -sSL -o falcon-container-sensor-pull.sh "https://raw.githubusercontent.com/CrowdStrike/falcon-scripts/refs/heads/main/bash/containers/falcon-container-sensor-pull/falcon-container-sensor-pull.sh"
 chmod +x falcon-container-sensor-pull.sh
 
 # Global Variables
@@ -30,7 +30,7 @@ export KAC_IMAGE_TAG=$( echo $KAC_IMAGE_FULL_PATH | cut -d':' -f 2 )
 echo Done.
 
 helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm --force-update
-helm upgrade --install falcon-platform crowdstrike/falcon-platform --version 1.0.0\
+helm upgrade --install falcon-platform crowdstrike/falcon-platform --version 1.4.0 \
   --namespace falcon-platform \
   --create-namespace \
   --set createComponentNamespaces=true \
